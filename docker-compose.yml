@@ -1,0 +1,41 @@
+#Starts Postgres and the API together.
+#Run it with: docker compose up --build
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: golf-postgres
+    environment:
+      POSTGRES_DB: golfclub
+      POSTGRES_USER: golfadmin
+      POSTGRES_PASSWORD: golfpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - golf-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      #The API crashes if it starts before
+      #Postgres is ready, so we wait.
+      test: ["CMD-SHELL", "pg_isready -U golfadmin -d golfclub"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: golf-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      #"postgres" is the service name above.
+      #localhost would not work here, inside
+      #the api container that means itself.
+      DB_URL: jdbc:postgresql://postgres:5432/golfclub
+      DB_USERNAME: golfadmin
+      DB_PASSWORD: golfpassword
+    ports:
+      - "8080:8080"
+
+volumes:
+  golf-pgdata:
