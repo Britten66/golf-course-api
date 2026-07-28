@@ -45,9 +45,8 @@ public class Tournament {
     private BigDecimal cashPrize;
 
     //mappedBy points at the field in Member
-    //that owns the join table.
-    //Adding to this list on its own does
-    //not save anything.
+    //that owns the join table. Adding here
+    //on its own does not save anything.
     @ManyToMany(mappedBy = "tournaments")
     private Set<Member> participatingMembers = new HashSet<>();
 }

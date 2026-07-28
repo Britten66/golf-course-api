@@ -11,12 +11,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-//We send these back instead of the entity.
-//If we sent the entity, the JSON would go
-//Member to Tournament to Member forever.
-//Request is what the client sends,
-//Response is what we send back,
-//Summary is the short version.
+//We send these back instead of the entity,
+//otherwise the JSON loops Member to
+//Tournament to Member forever.
 public class MemberDto {
 
     //No id in here, the database makes it.

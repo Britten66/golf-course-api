@@ -62,11 +62,8 @@ public class TournamentServiceImpl implements TournamentService {
         return TournamentDto.Response.fromAll(tournamentRepository.findByLocationContainingIgnoreCase(location));
     }
 
-    //Registering a member.
     //We go through the member because the
-    //member owns the join table. Adding to
-    //the tournament list on its own would
-    //not save anything.
+    //member owns the join table.
     @Override
     @Transactional
     public TournamentDto.Response registerMember(Long tournamentId, Long memberId) {
