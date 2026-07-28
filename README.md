@@ -30,36 +30,6 @@ mvnw.cmd spring-boot:run   # Windows
 
 
 
-## Design patterns used
-
-The assignment title mentions design patterns but does not say which. These three are the ones this project demonstrates.
-
-### 1. Repository pattern
-
-`MemberRepository` and `TournamentRepository` are **interfaces**. No implementation is written anywhere. Spring Data JPA reads each method name and generates the SQL at runtime:
-
-```java
-List<Member> findByPhoneContaining(String phone);
-```
-
-becomes `SELECT * FROM members WHERE phone LIKE '%?%'`.
-
-The database access is kept completely separate from the rest of the code, and swapping the database would not change a single service or controller.
-
-### 2. Service layer
-
-Every service is an **interface plus an implementation**:
-
-```
-MemberService          (interface: what it does)
-MemberServiceImpl      (class: how it does it)
-```
-
-Controllers depend only on the interface, and Spring injects the implementation. Business rules (duplicate email checks, "end date cannot be before start date", "already registered") live in the service, never in the controller and never in the repository. Each layer has one job.
-
-
-
-
 ## Issues hit while building, and how they were handled
 
 **Docker image had no ARM build.** The first Dockerfile used `eclipse-temurin:17-jre-alpine`, and the build failed on an Apple Silicon Mac with `no match for platform in manifest`. That tag has no arm64 variant. Fixed by switching to `eclipse-temurin:17-jre-jammy`, which is multi-architecture and therefore builds on both an M-series Mac and an x86 CI runner.
