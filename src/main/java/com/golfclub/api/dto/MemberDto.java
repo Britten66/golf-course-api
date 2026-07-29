@@ -11,12 +11,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-//We send these back instead of the entity,
-//otherwise the JSON loops Member to
-//Tournament to Member forever.
 public class MemberDto {
 
-    //No id in here, the database makes it.
     public record Request(
 
             @NotBlank(message = "name is required")
@@ -88,7 +84,6 @@ public class MemberDto {
         }
     }
 
-    //No tournaments in here, so the JSON stops.
     public record Summary(
             Long id,
             String name,

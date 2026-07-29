@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-//A club tournament.
 @Entity
 @Table(name = "tournaments")
 @Getter
@@ -37,16 +36,12 @@ public class Tournament {
     @Column(nullable = false)
     private String location;
 
-    //BigDecimal for money, not double.
     @Column(name = "entry_fee", nullable = false)
     private BigDecimal entryFee;
 
     @Column(name = "cash_prize", nullable = false)
     private BigDecimal cashPrize;
 
-    //mappedBy points at the field in Member
-    //that owns the join table. Adding here
-    //on its own does not save anything.
     @ManyToMany(mappedBy = "tournaments")
     private Set<Member> participatingMembers = new HashSet<>();
 }

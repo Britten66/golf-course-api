@@ -12,13 +12,9 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-//Catches errors from every controller so
-//we do not need try/catch in each one.
-//Anything not listed here is left to Spring.
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    //The shape of our error JSON.
     public record ApiError(
             LocalDateTime timestamp,
             int status,
@@ -28,7 +24,6 @@ public class GlobalExceptionHandler {
     ) {
     }
 
-    //Errors we threw ourselves.
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiError> handleApi(ApiException ex, HttpServletRequest request) {
         ApiError error = new ApiError(LocalDateTime.now(), ex.getStatus().value(),
@@ -36,7 +31,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ex.getStatus()).body(error);
     }
 
-    //@Valid failed. Send back every bad field.
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex,
                                                      HttpServletRequest request) {
@@ -49,8 +43,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    //A parameter was the wrong type,
-    //for example ?type=PLATINUM
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleBadParam(MethodArgumentTypeMismatchException ex,
                                                    HttpServletRequest request) {

@@ -15,8 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-//The rules for tournaments,
-//including registering a member.
 @Service
 @RequiredArgsConstructor
 public class TournamentServiceImpl implements TournamentService {
@@ -27,8 +25,6 @@ public class TournamentServiceImpl implements TournamentService {
     @Override
     @Transactional
     public TournamentDto.Response create(TournamentDto.Request request) {
-        //An annotation cannot compare two
-        //fields, so this check goes here.
         if (request.endDate().isBefore(request.startDate())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "endDate cannot be before startDate");
         }
@@ -62,8 +58,6 @@ public class TournamentServiceImpl implements TournamentService {
         return TournamentDto.Response.fromAll(tournamentRepository.findByLocationContainingIgnoreCase(location));
     }
 
-    //We go through the member because the
-    //member owns the join table.
     @Override
     @Transactional
     public TournamentDto.Response registerMember(Long tournamentId, Long memberId) {
@@ -81,10 +75,6 @@ public class TournamentServiceImpl implements TournamentService {
         }
 
         member.addTournament(tournament);
-
-        //No save() needed. Inside a transaction
-        //Hibernate spots the change and writes
-        //it when the method finishes.
 
         return TournamentDto.Response.from(tournament);
     }

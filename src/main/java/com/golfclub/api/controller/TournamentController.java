@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.List;
 
-//The endpoints for tournaments.
 @RestController
 @RequestMapping("/api/tournaments")
 @RequiredArgsConstructor
@@ -42,8 +41,6 @@ public class TournamentController {
         return tournamentService.getById(id);
     }
 
-    //The two searches the assignment asks for.
-
     @GetMapping("/search/by-start-date")
     public List<TournamentDto.Response> searchByStartDate(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
@@ -55,8 +52,6 @@ public class TournamentController {
         return tournamentService.searchByLocation(location);
     }
 
-    //Registering a member adds one row to
-    //the member_tournament table.
     @PostMapping("/{tournamentId}/members/{memberId}")
     public TournamentDto.Response registerMember(@PathVariable Long tournamentId,
                                                  @PathVariable Long memberId) {

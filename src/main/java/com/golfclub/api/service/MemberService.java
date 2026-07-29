@@ -6,8 +6,6 @@ import com.golfclub.api.dto.MemberDto;
 import java.time.LocalDate;
 import java.util.List;
 
-//The controller talks to this interface,
-//not to MemberServiceImpl directly.
 public interface MemberService {
 
     MemberDto.Response create(MemberDto.Request request);
@@ -22,6 +20,5 @@ public interface MemberService {
 
     List<MemberDto.Response> searchByPhone(String phone);
 
-    //Members in a tournament starting on this date.
     List<MemberDto.Response> searchByTournamentStartDate(LocalDate startDate);
 }

@@ -19,8 +19,6 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-//A club member.
-//@Entity means this class becomes a table.
 @Entity
 @Table(name = "members")
 @Getter
@@ -50,15 +48,10 @@ public class Member {
     @Column(name = "membership_duration", nullable = false)
     private int membershipDuration;
 
-    //EnumType.STRING saves the word "ANNUAL".
-    //Without it JPA saves a number instead.
     @Enumerated(EnumType.STRING)
     @Column(name = "membership_type", nullable = false)
     private MembershipType membershipType;
 
-    //The many to many link.
-    //@JoinTable is on this side, so this is
-    //the side that actually saves the rows.
     @ManyToMany
     @JoinTable(
             name = "member_tournament",
@@ -67,8 +60,6 @@ public class Member {
     )
     private Set<Tournament> tournaments = new HashSet<>();
 
-    //Adds the link on both objects.
-    //JPA does not do this for us.
     public void addTournament(Tournament tournament) {
         this.tournaments.add(tournament);
         tournament.getParticipatingMembers().add(this);

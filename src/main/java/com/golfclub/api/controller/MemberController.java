@@ -19,9 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.List;
 
-//The endpoints for members.
-//This class just reads the request and
-//calls the service. No rules in here.
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
@@ -29,8 +26,6 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    //@Valid turns on the checks we put
-    //on MemberDto.Request.
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public MemberDto.Response create(@Valid @RequestBody MemberDto.Request request) {
@@ -47,8 +42,6 @@ public class MemberController {
         return memberService.getById(id);
     }
 
-    //The four searches the assignment asks for.
-
     @GetMapping("/search/by-name")
     public List<MemberDto.Response> searchByName(@RequestParam String name) {
         return memberService.searchByName(name);
@@ -64,8 +57,6 @@ public class MemberController {
         return memberService.searchByPhone(phone);
     }
 
-    //@DateTimeFormat says the date comes in
-    //as yyyy-MM-dd
     @GetMapping("/search/by-tournament-date")
     public List<MemberDto.Response> searchByTournamentStartDate(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {

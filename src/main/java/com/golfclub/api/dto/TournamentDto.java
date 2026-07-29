@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-//Same idea as MemberDto.
 public class TournamentDto {
 
     public record Request(
@@ -73,7 +72,6 @@ public class TournamentDto {
         }
     }
 
-    //No members in here, so the JSON stops.
     public record Summary(
             Long id,
             LocalDate startDate,

@@ -7,13 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 
-//Same idea as MemberRepository.
 @Repository
 public interface TournamentRepository extends JpaRepository<Tournament, Long> {
 
-    //Search by start date.
     List<Tournament> findByStartDate(LocalDate startDate);
 
-    //Search by location, partial and any case.
     List<Tournament> findByLocationContainingIgnoreCase(String location);
 }

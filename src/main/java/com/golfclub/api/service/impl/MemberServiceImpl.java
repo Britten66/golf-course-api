@@ -14,9 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-//The rules live here.
-//Controllers only deal with HTTP and
-//repositories only deal with the database.
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
@@ -34,9 +31,6 @@ public class MemberServiceImpl implements MemberService {
         return MemberDto.Response.from(saved);
     }
 
-    //@Transactional keeps the database
-    //connection open while we read the
-    //tournaments list, which is loaded lazily.
     @Override
     @Transactional
     public MemberDto.Response getById(Long id) {
