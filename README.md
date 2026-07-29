@@ -19,7 +19,7 @@ That starts two containers: `golf-postgres` and `golf-api`. Then open:
 The database is seeded on startup with 6 members and 4 tournaments, already registered against each other, so every endpoint returns something straight away.
 
  here are the endpoints 
-
+```
  
 GET /api/members/search/by-name?name=alice
 GET /api/members/search/by-type?type=ANNUAL
@@ -28,7 +28,7 @@ GET /api/members/search/by-tournament-date?startDate=2026-08-14
 GET /api/tournaments/search/by-start-date?startDate=2026-08-14
 GET /api/tournaments/search/by-location?location=glen
 
-
+```
 
 ## Issues hit while building, and how they were handled
 
