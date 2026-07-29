@@ -6,7 +6,7 @@ Members register with the club, tournaments track who is participating, and the 
 
 ##USER STEPS
 ```bash
-git clone <your-repo-url>
+git clone
 cd golf-course-api
 docker compose up --build
 ```
