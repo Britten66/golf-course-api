@@ -18,15 +18,15 @@ That starts two containers: `golf-postgres` and `golf-api`. Then open:
 
 The database is seeded on startup with 6 members and 4 tournaments, already registered against each other, so every endpoint returns something straight away.
 
+ here are the endpoints 
 
-### Running without Docker
-
-Requires a PostgreSQL server on `localhost:5432` with database `golfclub`, user `golfadmin`, password `golfpassword`.
-
-```bash
-./mvnw spring-boot:run     # Mac / Linux
-mvnw.cmd spring-boot:run   # Windows
-```
+ 
+GET /api/members/search/by-name?name=alice
+GET /api/members/search/by-type?type=ANNUAL
+GET /api/members/search/by-phone?phone=782
+GET /api/members/search/by-tournament-date?startDate=2026-08-14
+GET /api/tournaments/search/by-start-date?startDate=2026-08-14
+GET /api/tournaments/search/by-location?location=glen
 
 
 
