@@ -1,14 +1,81 @@
 # Golf Course API
 
-A REST API for a golf club's membership and tournament system. Built with Spring Boot,
-using JPA and Hibernate to talk to a PostgreSQL database.
+A Spring Boot REST API for a golf club's membership and tournament system.
 
-Members join the club, tournaments track who is signed up, and the two are linked with a
-many to many relationship through a join table called member_tournament.
+It keeps track of members and the tournaments they are signed up for.
 
-## How to run it in Docker
+A member can be in more than one tournament and a tournament can have more than one member.
 
-You only need Docker. You do not need Java or Maven installed.
+## Built With
+
+Java 17, Spring Boot, PostgreSQL and Docker.
+
+## How It Works
+
+The project uses a layered setup.
+
+The models are the Member and Tournament classes.
+
+They are linked many to many through a join table called member_tournament.
+
+The repositories talk to the database.
+
+The services hold the logic and the rules.
+
+The controllers handle the web requests at /api/members and /api/tournaments.
+
+Requests and responses use DTO classes instead of the entities. If I sent the entity straight
+back the JSON would go Member to Tournament to Member and never stop.
+
+## Endpoints
+
+POST /api/members adds a member.
+
+GET /api/members returns all members.
+
+GET /api/members/{id} returns one member by its id.
+
+POST /api/tournaments adds a tournament.
+
+GET /api/tournaments returns all tournaments.
+
+GET /api/tournaments/{id} returns one tournament by its id.
+
+POST /api/tournaments/{tournamentId}/members/{memberId} registers a member into a tournament.
+
+## Search Endpoints
+
+These are all GET requests.
+
+Text searches match part of the value and ignore capitals. Searching alice finds both Alice
+Morrison and Frank Alice Delgado.
+
+Dates go in as yyyy-MM-dd.
+
+GET /api/members/search/by-name?name=alice
+
+GET /api/members/search/by-type?type=ANNUAL
+
+GET /api/members/search/by-phone?phone=782
+
+GET /api/members/search/by-tournament-date?startDate=2026-08-14
+
+GET /api/tournaments/search/by-start-date?startDate=2026-08-14
+
+GET /api/tournaments/search/by-location?location=glen
+
+The type has to be ANNUAL, MONTHLY or LIFETIME. Anything else gives back a 400.
+
+Searching members by tournament start date was the tricky one. Start date is on Tournament and
+not on Member, so the query has to join across the two tables. I wrote that one out instead of
+using a method name.
+
+The seed data has two tournaments starting on 2026-08-14 on purpose, so that search comes back
+with members from two different tournaments.
+
+## Running It In Docker
+
+You only need Docker. Java and Maven are not needed.
 
 ```bash
 git clone https://github.com/Britten66/golf-course-api.git
@@ -16,83 +83,28 @@ cd golf-course-api
 docker compose up --build
 ```
 
-That starts two containers, golf-postgres and golf-api. Then open:
+That starts two containers, golf-postgres and golf-api.
 
-- Swagger UI: http://localhost:8080/swagger-ui.html
-- All members: http://localhost:8080/api/members
+Then open http://localhost:8080/api/members
 
-The database gets seeded with 6 members and 4 tournaments when the app starts, and some of
-them are already registered for tournaments, so every endpoint returns something right away.
+The Swagger page is at http://localhost:8080/swagger-ui.html
 
-To stop it:
+The database gets seeded with 6 members and 4 tournaments when the app starts, and some of them
+are already registered, so every endpoint returns something right away.
 
-```bash
-docker compose down
-```
+docker compose down stops it.
 
-## API endpoints
+## Connecting To RDS
 
-Add and get members:
+I made a free tier PostgreSQL instance in RDS called golf-club-db.
 
-```
-POST /api/members
-GET  /api/members
-GET  /api/members/{id}
-```
+The two settings that mattered were Public access set to Yes and the initial database name set
+to golfclub.
 
-Add and get tournaments:
+I also made a security group called golf-db-sg with an inbound rule for port 5432 from my IP.
 
-```
-POST /api/tournaments
-GET  /api/tournaments
-GET  /api/tournaments/{id}
-```
-
-Register a member into a tournament:
-
-```
-POST /api/tournaments/{tournamentId}/members/{memberId}
-```
-
-## Search endpoints and how to use them
-
-All of these are GET requests. Text searches match part of the value and ignore upper or
-lower case, so searching for "alice" finds both Alice Morrison and Frank Alice Delgado.
-Dates are in yyyy-MM-dd format.
-
-```
-GET /api/members/search/by-name?name=alice
-GET /api/members/search/by-type?type=ANNUAL
-GET /api/members/search/by-phone?phone=782
-GET /api/members/search/by-tournament-date?startDate=2026-08-14
-GET /api/tournaments/search/by-start-date?startDate=2026-08-14
-GET /api/tournaments/search/by-location?location=glen
-```
-
-For the membership type search the value has to be ANNUAL, MONTHLY or LIFETIME. Anything
-else gives back a 400.
-
-The one that took the most thinking was searching members by tournament start date. Start
-date belongs to Tournament, not Member, so it has to join across the many to many. I wrote
-that query out instead of using a method name:
-
-```java
-@Query("select distinct m from Member m join m.tournaments t where t.startDate = :startDate")
-List<Member> findByTournamentStartDate(@Param("startDate") LocalDate startDate);
-```
-
-The seed data has two tournaments starting on 2026-08-14 on purpose, so that search returns
-members from two different tournaments and you can actually see it working.
-
-## How I connected to RDS
-
-I made a free tier PostgreSQL instance in RDS called golf-club-db. The settings that
-mattered were Public access set to Yes, and the initial database name set to golfclub. I
-also made a new security group called golf-db-sg with an inbound rule allowing port 5432
-from my IP.
-
-I did not have to change any code to connect to it. The datasource in
-application.properties reads environment variables with a local default after the colon:
+No code changed to point it at RDS. The datasource reads environment variables and falls back
+to a local default after the colon.
 
 ```properties
 spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/golfclub}
@@ -100,113 +112,86 @@ spring.datasource.username=${DB_USERNAME:golfadmin}
 spring.datasource.password=${DB_PASSWORD:golfpassword}
 ```
 
-So I ran the exact same Docker image and just passed in different values:
+So I ran the same Docker image with different values passed in.
 
 ```bash
+read -s "?RDS password: " PGPW
+
 docker run -p 8080:8080 \
-  -e DB_URL="jdbc:postgresql://your-endpoint.rds.amazonaws.com:5432/golfclub?sslmode=require" \
+  -e DB_URL="jdbc:postgresql://golf-club-db.cc9a4kg4ilu8.us-east-1.rds.amazonaws.com:5432/golfclub?sslmode=require" \
   -e DB_USERNAME="golfadmin" \
-  -e DB_PASSWORD="your-password" \
+  -e DB_PASSWORD="$PGPW" \
   -e DDL_AUTO="update" \
   golf-course-api-api
 ```
 
-The sslmode=require part is needed because RDS will not accept a connection that is not
-encrypted. DDL_AUTO=update is there so Hibernate leaves the tables alone when the container
-stops. Locally it is set to create-drop so the demo data resets every run.
+I read the password into a variable first so it does not sit in my shell history or in this file.
 
-I checked it worked two ways. The API returned all 6 seeded members while pointed at RDS,
-and connecting with psql showed the three tables that Hibernate had created in RDS:
+sslmode=require is needed because RDS will not take a connection that is not encrypted.
 
-```
-public | member_tournament | table | golfadmin
-public | members           | table | golfadmin
-public | tournaments       | table | golfadmin
-```
+DDL_AUTO=update stops Hibernate dropping the tables when the container stops. Locally it is set
+to create-drop so the demo data resets every run.
+
+I checked it two ways. The API returned all 6 seeded members while it was pointed at RDS, and
+connecting with psql showed the three tables Hibernate had made in RDS.
 
 Screenshots of the RDS setup and the connection are in the screenshots folder.
 
-## Problems I ran into
+## Problems I Ran Into
 
-The Docker image would not build. My first Dockerfile used
-eclipse-temurin:17-jre-alpine and the build failed with "no match for platform in
-manifest" because that tag has no arm64 version and I am on an Apple Silicon Mac. I
-switched to eclipse-temurin:17-jre-jammy which is multi architecture.
+The Docker image would not build. I used eclipse-temurin:17-jre-alpine and it failed with no
+match for platform in manifest. That tag has no arm64 build and I am on an Apple Silicon Mac.
+I switched to 17-jre-jammy which works on both.
 
-No JDK 17 on my machine. I had 11, 21 and 26 installed but not 17. Instead of installing
-another JDK I set java.version to 17 in the pom so it targets Java 17 bytecode, and the
-Docker build uses a real JDK 17 image, so the jar that actually ships is built correctly.
+I did not have JDK 17 installed. I had 11, 21 and 26. Instead of installing another one I set
+java.version to 17 in the pom, and the Docker build uses a real JDK 17 image, so the jar that
+ships is built on the right version.
 
-LazyInitializationException. The tournaments list on a Member loads lazily, so building the
-response object after the database session closed threw an error. I put @Transactional on
-the service methods so the session stays open until the method finishes.
+LazyInitializationException. The tournaments list on a Member loads lazily and the database
+session was already closed by the time the response was being built. Putting @Transactional on
+the service methods fixed it.
 
-Seed data silently did not load. After I switched to create-drop, every endpoint started
-returning an empty list and there was no error anywhere in the logs. The cause was a missing
-spring.sql.init.mode=always. By default Spring only runs data.sql on in memory databases
-like H2 and skips it on a real Postgres. That one was hard to find because nothing failed,
-the tables were just empty.
+The seed data quietly did not load. Every endpoint came back empty and there was nothing in the
+logs at all. It was a missing spring.sql.init.mode=always. Spring only runs data.sql on in
+memory databases by default and skips it on a real Postgres. That one was hard to find because
+nothing actually failed, the tables were just empty.
 
-The RDS certificate download gave me a file that was not a certificate. The AWS docs URL I
-used returned a 111 byte AccessDenied page instead, and curl saved it without complaining
-because I did not use -L. psql then said "no certificate or crl found". The path that
-actually works is /global/global-bundle.pem.
+The RDS certificate I downloaded was not a certificate. The URL I used gave back a 111 byte
+AccessDenied page and curl saved it without complaining because I forgot -L. psql then said no
+certificate or crl found. The path that works is /global/global-bundle.pem.
 
-Password authentication failed on the first RDS connection. I reset the master password in
-the RDS console under Modify and applied it immediately, which fixed it.
+Password authentication failed on my first RDS connection. I reset the master password in the
+console under Modify and applied it right away.
 
-RDS gave me PostgreSQL 18 but my local psql client is 15. Running \l failed with "column
-d.daticulocale does not exist" because the newer server renamed that column. I used a plain
-SELECT query instead of the psql shortcut.
+RDS gave me PostgreSQL 18 and my psql client is 15. Running \l failed with column
+d.daticulocale does not exist because the newer server renamed it. I used a plain SELECT
+instead.
 
-The golfclub database did not exist. I missed the Initial database name field when creating
-the instance, so I had to connect to the default postgres database and run
-CREATE DATABASE golfclub by hand.
+The golfclub database did not exist. I missed the initial database name field when I made the
+instance, so I had to connect to the default postgres database and run CREATE DATABASE
+golfclub myself.
 
 ## Assumptions
 
-- The database is PostgreSQL.
-- Membership duration is a whole number of months, stored as an int.
-- Membership type is an enum saved as text, so the rows are readable and reordering the enum
-  cannot break existing data.
-- Registering a member into a tournament is a plain join with no extra fields on it.
-- Email has to be unique across members, otherwise you cannot tell two members apart.
-- Searches match partial text and ignore case, because needing an exact full name would make
-  the search close to useless.
+Membership duration is a whole number of months, stored as an int.
 
-## Project structure
+Membership type is an enum saved as text so the rows stay readable.
 
-```
-src/main/java/com/golfclub/api/
-├── GolfCourseApiApplication.java
-├── controller/
-│   ├── MemberController.java
-│   └── TournamentController.java
-├── service/
-│   ├── MemberService.java
-│   ├── TournamentService.java
-│   └── impl/
-│       ├── MemberServiceImpl.java
-│       └── TournamentServiceImpl.java
-├── repository/
-│   ├── MemberRepository.java
-│   └── TournamentRepository.java
-├── domain/
-│   ├── Member.java
-│   ├── Tournament.java
-│   └── MembershipType.java
-├── dto/
-│   ├── MemberDto.java
-│   └── TournamentDto.java
-└── exception/
-    ├── ApiException.java
-    └── GlobalExceptionHandler.java
-```
+Registering a member into a tournament is a plain join with no extra fields on it.
 
-A request goes controller, then service, then repository, then the database. The response
-comes back as a DTO instead of the entity itself, which stops the JSON looping from Member
-to Tournament and back forever.
+Email has to be unique across members or you cannot tell two members apart.
 
-The design patterns in here are the Repository pattern for the Spring Data interfaces, a
-service layer with an interface and an implementation, and DTOs so the entities never get
-sent over HTTP.
+Searches match partial text and ignore capitals, because needing the exact full name would
+make them close to useless.
+
+## Testing
+
+All of the endpoints were tested in Postman.
+
+Screenshots of the requests and responses are in the screenshots folder.
+
+There is also a screenshot of the two containers running in Docker.
+
+The design patterns used are the Repository pattern for the Spring Data interfaces, a service
+layer with an interface and an implementation, and DTOs so the entities never get sent over
+HTTP.
