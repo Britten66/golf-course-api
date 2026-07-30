@@ -39,3 +39,6 @@ Thumbs.db
 
 #assignment handout, not part of the build
 *.docx
+
+#rds cert bundle
+*.pem
